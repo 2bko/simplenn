@@ -1,0 +1,30 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+x<--5:5
+y<-x^2
+df<-data.frame(X=x, Y=y)
+str(df)
+library(neuralnet)
+model_nn<-neuralnet(Y~X, data=df, hidden=c(10,5), linear.output=T, rep=50, stepmax=5000)
+
+plot(model_nn)
+```
+
+```{r}
+cc <- c("c1", "c2")
+cc2 <- c("c3", "c4")
+
+lcc <- paste(cc, collapse = " ~ ")
+rcc <- paste(cc2, collapse = " + ")
+
+tcc <- paste(lcc, "~", rcc)
+print(tcc)
+```
