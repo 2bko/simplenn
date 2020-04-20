@@ -65,7 +65,7 @@ shinyUI(fluidPage(
       tabsetPanel(
         tabPanel("Summary",  verbatimTextOutput("summary")),
         tabPanel("Preview",  tableOutput("dataPreview")),
-        tabPanel("Exploration",  plotOutput("mainPlot"))
+        tabPanel("Exploration",  plotOutput("net"))
       )
 
     )

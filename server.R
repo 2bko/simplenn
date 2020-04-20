@@ -25,6 +25,8 @@ shinyServer(function(input, output, session) {
       )
     
     data <- na.omit(data)
+    data[complete.cases(data),]
+    data[!(is.na(data$Name) | data$Name=="" | is.na(data$Science_score) | data$Science_score==""|is.na(data$Mathematics_score) | data$Mathematics_score==""),]
     
     output$dataPreview <- renderTable(data)
     output$summary <- renderPrint(summary(data))
@@ -99,14 +101,14 @@ shinyServer(function(input, output, session) {
                        formula,
                        data = dd,
                        hidden = hidden,
-                       linear.output = FALSE,
+                       linear.output = T,
                        rep = repetitions,
                        stepmax = stepmax,
                        threshold=0.01,
                      )
                    incProgress(2 / 3)
-                   output$mainPlot <- renderPlot({
-                     return(plot(model_nn))
+                   output$net <- renderPlot({
+                     plot(model_nn, rep="best")
                    })
                    output$df <- renderTable(df)
                    incProgress(3 / 3)
