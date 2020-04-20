@@ -23,11 +23,25 @@ shinyServer(function(input, output, session) {
         sep = input$sep,
         quote = input$quote
       )
-
+    
+    data <- na.omit(data)
+    
     output$dataPreview <- renderTable(data)
     output$summary <- renderPrint(summary(data))
 
     data
+  })
+  
+  observeEvent(input$nLayers, {
+    layer <- input$nLayers
+
+    output$layersSliderInputs <- renderUI({
+      lapply(1:layer, function(i) {
+        label <- paste0("Layer ", i, " Hidden Nodes:")
+        name <- paste0("nNodesL", i)
+        sliderInput(name, label, min = 1, max =20, value =2)
+      })
+    })
   })
 
 
@@ -41,22 +55,35 @@ shinyServer(function(input, output, session) {
 
     dataset <- dataset()
 
-
     dataset[] <- lapply(dataset, function(x) {
       if (is.factor(x))
         as.numeric(x)
       else
         x
     })
+    
     sapply(dataset, class)
     summary(dataset)
 
-    hiddenNodesL1 <- as.numeric(input$nNodesL1)
-    hiddenNodesL2 <- as.numeric(input$nNodesL2)
-
+    # hiddenNodesL1 <- as.numeric(input$nNodesL1)
+    # hiddenNodesL2 <- as.numeric(input$nNodesL2)
+    
+    layer <- input$nLayers
+    hidden <- c()
+    
+    for (i in 1:layer) {
+      name <- paste0("nNodesL", i)
+      hidden <- c(hidden, as.numeric(input[[name]]))
+    }
+    
+    repetitions <- input$nRepetitions
+    stepmax <- input$nStepMax
+    
     inputFields <- input$input_fields
     outputFields <- input$output_fields
-
+    
+    dd <- dataset[c(inputFields, outputFields)]
+    
     leftFormula <- paste(inputFields, collapse = " + ")
     rightFormula <- paste(outputFields, collapse = " + ")
 
@@ -70,15 +97,16 @@ shinyServer(function(input, output, session) {
                    model_nn <-
                      neuralnet(
                        formula,
-                       data = dataset,
-                       hidden = c(hiddenNodesL1, hiddenNodesL2),
+                       data = dd,
+                       hidden = hidden,
                        linear.output = FALSE,
-                       rep = 50,
-                       stepmax = 10000
+                       rep = repetitions,
+                       stepmax = stepmax,
+                       threshold=0.01,
                      )
                    incProgress(2 / 3)
                    output$mainPlot <- renderPlot({
-                     plotnet(model_nn)
+                     return(plot(model_nn))
                    })
                    output$df <- renderTable(df)
                    incProgress(3 / 3)
