@@ -1,6 +1,7 @@
 library(shiny)
 library(neuralnet)
 library(NeuralNetTools)
+library(ROCR)
 
 shinyServer(function(input, output, session) {
   inFile <- reactive({
@@ -26,7 +27,6 @@ shinyServer(function(input, output, session) {
     
     data <- na.omit(data)
     data[complete.cases(data),]
-    data[!(is.na(data$Name) | data$Name=="" | is.na(data$Science_score) | data$Science_score==""|is.na(data$Mathematics_score) | data$Mathematics_score==""),]
     
     output$dataPreview <- renderTable(data)
     output$summary <- renderPrint(summary(data))
@@ -64,7 +64,7 @@ shinyServer(function(input, output, session) {
         x
     })
     
-    sapply(dataset, class)
+    # sapply(dataset, class)
     summary(dataset)
 
     # hiddenNodesL1 <- as.numeric(input$nNodesL1)
@@ -84,13 +84,17 @@ shinyServer(function(input, output, session) {
     inputFields <- input$input_fields
     outputFields <- input$output_fields
     
-    dd <- dataset[c(inputFields, outputFields)]
+    smp_size <- floor(0.75 * nrow(dataset))
+    train_ind <- sample(seq_len(nrow(dataset)), size = smp_size)
+    
+    train <- dataset[train_ind, ]
+    test <- dataset[-train_ind, ]
     
     leftFormula <- paste(inputFields, collapse = " + ")
     rightFormula <- paste(outputFields, collapse = " + ")
 
     formula <- as.formula(paste(rightFormula, "~", leftFormula))
-
+    
     withProgress(message = 'Training Neural Net',
                  detail = 'This may take a while...',
                  value = 0,
@@ -99,16 +103,28 @@ shinyServer(function(input, output, session) {
                    model_nn <-
                      neuralnet(
                        formula,
-                       data = dd,
+                       data = train,
                        hidden = hidden,
-                       linear.output = T,
+                       linear.output = F,
                        rep = repetitions,
                        stepmax = stepmax,
-                       threshold=0.01,
+                       lifesign = "minimal",
+                       threshold = 0.01,
+                       err.fct = "ce"
                      )
+                   
+                   prob = compute(model_nn, test[, -ncol(test)] )
+                   prob.result <- prob$net.result
+                   nn.pred = prediction(prob.result, test[[outputFields]])
+                   pref <- performance(nn.pred, "tpr", "fpr")
+                   str(pref)
+                   
                    incProgress(2 / 3)
                    output$net <- renderPlot({
                      plot(model_nn, rep="best")
+                   })
+                   output$roc <- renderPlot({
+                     plot(pref, main="ROC Curve")
                    })
                    output$df <- renderTable(df)
                    incProgress(3 / 3)

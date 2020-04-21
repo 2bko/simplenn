@@ -38,8 +38,8 @@ shinyUI(fluidPage(
         tags$hr()
       ),
       div(
-        numericInput("nStepMax", "Maximum steps for the training", min = 100, max = 10000, value = 1000),
-        numericInput("nRepetitions", "The number of repetitions", min = 10, value = 50),
+        numericInput("nStepMax", "Maximum steps for the training", min = 1000, max = 10000, value = 100),
+        numericInput("nRepetitions", "The number of repetitions", min = 1, value = 10),
         sliderInput("nLayers", "Number of Hidden Layers:", min = 1, max =10, value =2),
         uiOutput("layersSliderInputs"),
         # sliderInput("nNodesL1", "Layer 1 Hidden Nodes:", min = 10, max =20, value =10),
@@ -65,7 +65,7 @@ shinyUI(fluidPage(
       tabsetPanel(
         tabPanel("Summary",  verbatimTextOutput("summary")),
         tabPanel("Preview",  tableOutput("dataPreview")),
-        tabPanel("Exploration",  plotOutput("net"))
+        tabPanel("Exploration",  plotOutput("net"), plotOutput("roc"))
       )
 
     )
