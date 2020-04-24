@@ -1,7 +1,6 @@
 library(shiny)
 library(neuralnet)
 library(NeuralNetTools)
-library(ROCR)
 
 shinyServer(function(input, output, session) {
   inFile <- reactive({
@@ -100,6 +99,9 @@ shinyServer(function(input, output, session) {
                  value = 0,
                  {
                    incProgress(1 / 3)
+                   
+                   library(neuralnet)
+                   
                    model_nn <-
                      neuralnet(
                        formula,
@@ -113,16 +115,21 @@ shinyServer(function(input, output, session) {
                        err.fct = "ce"
                      )
                    
-                   prob = compute(model_nn, test[, -ncol(test)] )
+                   prob <- compute(model_nn, test[, model_nn$model.list$variables])
                    prob.result <- prob$net.result
-                   nn.pred = prediction(prob.result, test[[outputFields]])
-                   pref <- performance(nn.pred, "tpr", "fpr")
-                   str(pref)
                    
-                   incProgress(2 / 3)
                    output$net <- renderPlot({
                      plot(model_nn, rep="best")
                    })
+                   
+                   detach(package:neuralnet,unload = T)
+                   
+                   incProgress(2 / 3)
+                   
+                   library(ROCR)
+                   nn.pred = prediction(prob.result, test[[outputFields]])
+                   pref <- performance(nn.pred, "tpr", "fpr")
+                   
                    output$roc <- renderPlot({
                      plot(pref, main="ROC Curve")
                    })
@@ -130,5 +137,4 @@ shinyServer(function(input, output, session) {
                    incProgress(3 / 3)
                  })
   })
-
 })
