@@ -38,12 +38,10 @@ shinyUI(fluidPage(
         tags$hr()
       ),
       div(
-        numericInput("nStepMax", "Maximum steps for the training", min = 1000, max = 10000, value = 100),
-        numericInput("nRepetitions", "The number of repetitions", min = 1, value = 10),
+        numericInput("nStepMax", "Maximum steps for the training", min = 1000, max = 1000000, value = 1000000),
+        numericInput("nRepetitions", "The number of repetitions", min = 1, value = 2),
         sliderInput("nLayers", "Number of Hidden Layers:", min = 1, max =10, value =2),
         uiOutput("layersSliderInputs"),
-        # sliderInput("nNodesL1", "Layer 1 Hidden Nodes:", min = 10, max =20, value =10),
-        # sliderInput("nNodesL2", "Layer 2 Hidden Nodes:", min = 5, max =10, value =5),
         selectInput(
           "input_fields",
           label = h5("Input fields"),
