@@ -1,6 +1,7 @@
 library(shiny)
 library(neuralnet)
 library(NeuralNetTools)
+library(ROCR)
 
 shinyServer(function(input, output, session) {
   inFile <- reactive({
@@ -100,8 +101,6 @@ shinyServer(function(input, output, session) {
                  {
                    incProgress(1 / 3)
                    
-                   library(neuralnet)
-                   
                    model_nn <-
                      neuralnet(
                        formula,
@@ -112,26 +111,37 @@ shinyServer(function(input, output, session) {
                        stepmax = stepmax,
                        lifesign = "minimal",
                        threshold = 0.01,
-                       err.fct = "ce"
+                       act.fct = "tanh"
                      )
                    
-                   prob <- compute(model_nn, test[, model_nn$model.list$variables])
+                   prob <- neuralnet::compute(model_nn, test[, model_nn$model.list$variables])
                    prob.result <- prob$net.result
                    
                    output$net <- renderPlot({
                      plot(model_nn, rep="best")
                    })
                    
-                   detach(package:neuralnet,unload = T)
-                   
                    incProgress(2 / 3)
                    
-                   library(ROCR)
-                   nn.pred = prediction(prob.result, test[[outputFields]])
+
+                   nn.pred = ROCR::prediction(prob.result, test[[outputFields]])
                    pref <- performance(nn.pred, "tpr", "fpr")
+                   pref2 <- performance(nn.pred, "prec", "rec")
+                   pref3 <- performance(nn.pred, "sens", "spec")
                    
+                   AUCTestNN <- performance(nn.pred, "auc")
+                   AUCTestNN <- as.numeric(AUCTestNN@y.values)
+                   output$auc <- renderText({
+                     paste0("AUC: ", AUCTestNN)
+                   })
                    output$roc <- renderPlot({
                      plot(pref, main="ROC Curve")
+                   })
+                   output$precision_recall <- renderPlot({
+                     plot(pref2, main="Precision/recall")
+                   })
+                   output$sensivity_specifity <- renderPlot({
+                     plot(pref3, main="Sensitivity/specificity plots")
                    })
                    output$df <- renderTable(df)
                    incProgress(3 / 3)

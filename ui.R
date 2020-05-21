@@ -63,7 +63,13 @@ shinyUI(fluidPage(
       tabsetPanel(
         tabPanel("Summary",  verbatimTextOutput("summary")),
         tabPanel("Preview",  tableOutput("dataPreview")),
-        tabPanel("Exploration",  plotOutput("net"), plotOutput("roc"))
+        tabPanel("Exploration",  
+                 plotOutput("net"), 
+                 plotOutput("roc"),
+                 verbatimTextOutput("auc"),
+                 plotOutput("precision_recall"),
+                 plotOutput("sensivity_specifity")
+                )
       )
 
     )
