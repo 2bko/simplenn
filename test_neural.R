@@ -51,5 +51,15 @@ garson(model_nn)
 
 
 prob <- neuralnet::compute(model_nn, test[, model_nn$model.list$variables])
+tt <- test[, model_nn$model.list$variables]
+tt$Prediction <- prob$net.result
+str(tt)
+table(tt)
+resultTable <- table(test[, model_nn$model.list$variables], prob$net.result)
+resultTable
 pred <- ifelse(prob$net.result > 0.5, 1, 0)
 confusionMatrix(factor(pred), factor(test$Survived))
+
+
+pred <- predict(model_nn, test[, model_nn$model.list$variables])
+table(test$Survived, apply(pred, 1, which.max))

@@ -124,11 +124,18 @@ shinyServer(function(input, output, session) {
                    
                    incProgress(2 / 3)
                    
+                   tt <- test[, model_nn$model.list$variables]
+                   tt$Prediction <- prob$net.result
+                   
+                   output$prediction_table <- renderTable({
+                     tt
+                   })
+                   
                    prob <- neuralnet::compute(model_nn, test[, model_nn$model.list$variables])
                    pred <- ifelse(prob$net.result > 0.5, 1, 0)
                    
                    output$cm <- renderPrint({
-                     confusionMatrix(factor(pred), factor(test$Survived))
+                     confusionMatrix(factor(pred), factor(test[[outputFields]]))
                    })
                    
                    nn.pred = ROCR::prediction(prob.result, test[[outputFields]])

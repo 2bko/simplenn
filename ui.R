@@ -66,6 +66,7 @@ shinyUI(fluidPage(
         tabPanel("Exploration",  
                  verbatimTextOutput("cm"),
                  verbatimTextOutput("auc"),
+                 tableOutput("prediction_table"),
                  plotOutput("roc"),
                  plotOutput("precision_recall"),
                  plotOutput("sensivity_specifity"),
