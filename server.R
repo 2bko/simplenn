@@ -2,6 +2,7 @@ library(shiny)
 library(neuralnet)
 library(NeuralNetTools)
 library(ROCR)
+library(caret)
 
 shinyServer(function(input, output, session) {
   inFile <- reactive({
@@ -123,7 +124,13 @@ shinyServer(function(input, output, session) {
                    
                    incProgress(2 / 3)
                    
-
+                   prob <- neuralnet::compute(model_nn, test[, model_nn$model.list$variables])
+                   pred <- ifelse(prob$net.result > 0.5, 1, 0)
+                   
+                   output$cm <- renderPrint({
+                     confusionMatrix(factor(pred), factor(test$Survived))
+                   })
+                   
                    nn.pred = ROCR::prediction(prob.result, test[[outputFields]])
                    pref <- performance(nn.pred, "tpr", "fpr")
                    pref2 <- performance(nn.pred, "prec", "rec")

@@ -3,7 +3,7 @@ library(NeuralNetTools)
 
 data <-
   read.csv(
-    "~/Downloads/train.csv",
+    "~/Downloads/titanic/train.csv",
     header = TRUE,
     sep = ","
   )
@@ -27,7 +27,7 @@ test <- data[-train_ind,]
 
 str(train)
 
-formula <- as.formula("Survived ~ Age + Sex")
+formula <- as.formula("Survived ~ Age + Sex1")
 
 field <- "Survived"
 
@@ -35,7 +35,7 @@ model_nn <-
   neuralnet(
     formula,
     data = train,
-    hidden = c(2, 2),
+    hidden = c(2),
     linear.output = T,
     rep = 2,
     stepmax = 1000000,
@@ -47,13 +47,9 @@ plot(model_nn, rep = "best")
 d <- subset(test, select = -field)
 str(d)
 
-# prob <- compute(model_nn, subset(test, select=-c("Survived")))
-# prob.result <- prob$net.result
-#
-# detach(package:neuralnet,unload = T)
-#
-# library(ROCR)
-# nn.pred = prediction(prob.result, test$Survived)
-# pref <- performance(nn.pred, "tpr", "fpr")
-# plot(pref)
+garson(model_nn)
 
+
+prob <- neuralnet::compute(model_nn, test[, model_nn$model.list$variables])
+pred <- ifelse(prob$net.result > 0.5, 1, 0)
+confusionMatrix(factor(pred), factor(test$Survived))
