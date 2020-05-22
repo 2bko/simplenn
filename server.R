@@ -150,6 +150,12 @@ shinyServer(function(input, output, session) {
                    output$sensivity_specifity <- renderPlot({
                      plot(pref3, main="Sensitivity/specificity plots")
                    })
+                   # garson plot working with 1 hidden layer only
+                   if (layer == 1) {
+                     output$garson <- renderPlot({
+                      garson(model_nn)
+                     })
+                   }
                    output$df <- renderTable(df)
                    incProgress(3 / 3)
                  })
