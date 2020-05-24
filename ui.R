@@ -63,7 +63,7 @@ shinyUI(fluidPage(
       tabsetPanel(
         tabPanel("Summary",  verbatimTextOutput("summary")),
         tabPanel("Preview",  tableOutput("dataPreview")),
-        tabPanel("Exploration",  
+        tabPanel("Exploration",
                  verbatimTextOutput("cm"),
                  verbatimTextOutput("auc"),
                  tableOutput("prediction_table"),
@@ -71,7 +71,7 @@ shinyUI(fluidPage(
                  plotOutput("precision_recall"),
                  plotOutput("sensivity_specifity"),
                  plotOutput("garson"),
-                 plotOutput("net"),
+                 plotOutput("net")
                 )
       )
 
