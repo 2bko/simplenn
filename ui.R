@@ -1,4 +1,5 @@
 library(shiny)
+library(DT)
 
 shinyUI(fluidPage(
 
@@ -62,10 +63,11 @@ shinyUI(fluidPage(
     mainPanel(
       tabsetPanel(
         tabPanel("Summary",  verbatimTextOutput("summary")),
-        tabPanel("Preview",  tableOutput("dataPreview")),
+        tabPanel("Preview",  tableOutput('dataPreview')),
         tabPanel("Exploration",
                  verbatimTextOutput("cm"),
                  verbatimTextOutput("auc"),
+                 uiOutput("exportBtn"),
                  tableOutput("prediction_table"),
                  plotOutput("roc"),
                  plotOutput("precision_recall"),

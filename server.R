@@ -3,6 +3,7 @@ library(neuralnet)
 library(NeuralNetTools)
 library(ROCR)
 library(caret)
+library(DT)
 
 shinyServer(function(input, output, session) {
   inFile <- reactive({
@@ -29,7 +30,7 @@ shinyServer(function(input, output, session) {
     data <- na.omit(data)
     data[complete.cases(data),]
     
-    output$dataPreview <- renderTable(data)
+    output$dataPreview <- renderTable(data, server = TRUE)
     output$summary <- renderPrint(summary(data))
 
     data
@@ -101,7 +102,6 @@ shinyServer(function(input, output, session) {
                  value = 0,
                  {
                    incProgress(1 / 3)
-                   
                    model_nn <-
                      neuralnet(
                        formula,
@@ -114,24 +114,35 @@ shinyServer(function(input, output, session) {
                        threshold = 0.01,
                        act.fct = "tanh"
                      )
-                   
                    prob <- neuralnet::compute(model_nn, test[, model_nn$model.list$variables])
                    prob.result <- prob$net.result
                    
                    output$net <- renderPlot({
                      plot(model_nn, rep="best")
                    })
-                   
+                   output$exportBtn <- NULL
                    incProgress(2 / 3)
                    
-                   tt <- test[, model_nn$model.list$variables]
+                   tt <- test[, c(names(test)[1], model_nn$model.list$variables, input$output_fields)]
                    tt$Prediction <- prob$net.result
                    
                    output$prediction_table <- renderTable({
                      tt
+                   }, row.names = TRUE)
+                   output$exportResult <- downloadHandler(filename = "result.csv",
+                                                          content = function(file) {
+                                                            if (is.null(tt)) {
+                                                              return()
+                                                            }
+                                                            write.csv(tt, file, row.names = FALSE)
+                                                          })
+                   output$exportBtn <- renderUI({
+                     if (!is.null(tt)) {
+                       downloadButton("exportResult", "Export")
+                     }
                    })
-                   
-                   prob <- neuralnet::compute(model_nn, test[, model_nn$model.list$variables])
+                   print("Tst")
+                   prob <- neuralnet::compute(model_nn, test[,model_nn$model.list$variables])
                    pred <- ifelse(prob$net.result > 0.5, 1, 0)
                    
                    output$cm <- renderPrint({
